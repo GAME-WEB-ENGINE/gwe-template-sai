@@ -1,0 +1,138 @@
+class Action {
+  constructor(duel) {
+    this.duel = duel;
+    this.currentDuelist = this.duel.duelists[this.duel.currentDuelistIndex];
+    this.negate = false;
+  }
+
+  isNegate() {
+    return this.negate;
+  }
+  
+  async exec() {
+    return true;
+  }
+}
+
+class DirectAttackAction extends Action {
+  constructor(duel, attackerCard) {
+    super(duel);
+    this.attackerCard = attackerCard;
+  }
+
+  async exec() {
+    await this.duel.operationDamage(this.duel.opponentDuelistIndex, this.attackerCard.getAttribute('ATK'));
+    this.attackerCard.incAttribute('ATK_COUNT');
+  }
+}
+
+class DrawAction extends Action {
+  constructor(duel) {
+    super(duel);
+  }
+
+  async exec() {
+    await this.duel.operationDraw(this.duel.currentDuelistIndex, 1);
+    this.currentDuelist.incAttribute('DRAW_COUNT');
+  }
+}
+
+class SummonAction extends Action {
+  constructor(duel, monsterCard, index) {
+    super(duel);
+    this.monsterCard = monsterCard;
+    this.index = index;
+  }
+
+  async exec() {
+    this.duel.operationSummon(this.monsterCard, this.index);
+    this.currentDuelist.incAttribute('SUMMON_COUNT');
+  }
+}
+
+class SetAction extends Action {
+  constructor(duel, spellCard, index) {
+    super(duel);
+    this.spellCard = spellCard;
+    this.index = index;
+  }
+
+  async exec() {
+    await this.duel.operationSet(this.spellCard, this.index);
+  }
+}
+
+class ChangePositionAction extends Action {
+  constructor(duel, monsterCard) {
+    super(duel);
+    this.monsterCard = monsterCard;
+  }
+
+  async exec() {
+    let position = loc0.card.position == CARD_POS.ATTACK ? CARD_POS.DEFENSE : CARD_POS.ATTACK;
+    this.duel.operationChangePosition(loc0.card, position);
+  }
+}
+
+class BattleAction extends Action {
+  constructor(duel, attackerCard, targetCard) {
+    super(duel);
+    this.attackerCard = attackerCard;
+    this.targetCard = targetCard;
+  }
+
+  async exec() {
+    await this.duel.operationBattle(this.attackerCard, this.targetCard);
+    this.attackerCard.incAttribute('ATK_COUNT');
+  }
+}
+
+class NextPhaseAction extends Action {
+  constructor(duel) {
+    super(duel);
+  }
+
+  async exec() {
+    await this.duel.operationNextPhase();
+  }
+}
+
+class ActivateAction extends Action {
+  constructor(duel, spellCard) {
+    super(duel);
+    this.spellCard = spellCard;
+  }
+
+  async exec() {
+    await this.duel.operationChangePosition(this.spellCard, CARD_POS.FACEUP);
+
+    for (let i = 0; i < this.spellCard.effects.length; i++) {
+      await this.duel.runAction(new ActivateCardEffectInternalAction(this.duel, this.spellCard, i));
+    }
+
+    if (this.spellCard.nature == SPELL_CARD_NATURE.NORMAL) {
+      await this.duel.operationDestroy(this.spellCard);
+    }
+  }
+}
+
+class ActivateCardEffectInternalAction extends Action {
+  constructor(duel, spellCard, effectIndex) {
+    super(duel);
+    this.spellCard = spellCard;
+    this.effectIndex = effectIndex;
+  }
+
+  async exec() {
+    await this.duel.operationActivateCardEffect(this.spellCard, this.effectIndex);
+  }
+}
+
+module.exports.DirectAttackAction = DirectAttackAction;
+module.exports.DrawAction = DrawAction;
+module.exports.SummonAction = SummonAction;
+module.exports.SetAction = SetAction;
+module.exports.ChangePositionAction = ChangePositionAction;
+module.exports.BattleAction = BattleAction;
+module.exports.NextPhaseAction = NextPhaseAction;
+module.exports.ActivateAction = ActivateAction;
