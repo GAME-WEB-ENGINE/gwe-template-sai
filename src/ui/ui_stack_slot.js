@@ -34,12 +34,24 @@ class UIStackSlot extends GWE.UIWidget {
     this.cards = cards ? cards : [];
   }
 
+  getDuelistIndex() {
+    return this.duelistIndex;
+  }
+
   setDuelistIndex(duelistIndex) {
     this.duelistIndex = duelistIndex;
   }
 
+  getLocation() {
+    return this.location;
+  }
+
   setLocation(location) {
     this.location = location;
+  }
+
+  isFlipped() {
+    return this.flipped;
   }
 
   setFlipped(flipped) {

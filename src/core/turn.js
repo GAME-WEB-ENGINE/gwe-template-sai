@@ -8,6 +8,10 @@ class Turn {
     return this.phases;
   }
 
+  getPhase(id) {
+    return this.phases.find(phase => phase.id == id);
+  }
+
   addPhase(phase) {
     this.phases.push(phase);
   }

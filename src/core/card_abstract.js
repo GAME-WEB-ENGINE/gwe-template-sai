@@ -1,4 +1,5 @@
 let { CARD_ELEMENT, LOCATION } = require('./enums');
+let { Attributes } = require('./attributes');
 
 class CardAbstract {
   constructor(data) {
@@ -14,6 +15,9 @@ class CardAbstract {
     this.location = LOCATION.DECK;
     this.turnCounter = 0;
 
+    if (!data.hasOwnProperty('Id')) {
+      return;
+    }
     if (!data.hasOwnProperty('Type')) {
       return;
     }
@@ -43,6 +47,7 @@ class CardAbstract {
       return;
     }
 
+    this.id = data['Id'];
     this.type = data['Type'];
     this.name = data['Name'];
     this.text = data['Text'];
@@ -70,6 +75,10 @@ class CardAbstract {
     return this.coverFile;
   }
 
+  getAttributes() {
+    return this.attributes;
+  }
+
   getAttribute(key) {
     return this.attributes.get(key);
   }
@@ -94,8 +103,16 @@ class CardAbstract {
     return this.position;
   }
 
+  setPosition(position) {
+    this.position = position;
+  }
+
   getLocation() {
     return this.location;
+  }
+
+  setLocation(location) {
+    this.location = location;
   }
 
   getTurnCounter() {

@@ -6,6 +6,7 @@ let { UITurn } = require('../ui/ui_turn');
 let { UIDuelist } = require('../ui/ui_duelist');
 let { UICardDetail } = require('../ui/ui_card_detail');
 let { UIBoard } = require('../ui/ui_board');
+let { UICardSlot } = require('../ui/ui_card_slot');
 
 class GameScreen extends GWE.Screen {
   constructor(app) {
@@ -39,11 +40,11 @@ class GameScreen extends GWE.Screen {
     GWE.uiManager.addWidget(this.uiTurn, 'position: absolute; top:0; left:0; right:0; line-height:30px; z-index:100');
 
     this.uiDuelists.push(new UIDuelist());
-    this.uiDuelists[0].setDuelist(this.duel.duelists[0]);
+    this.uiDuelists[0].setDuelist(this.duel.getDuelists()[0]);
     GWE.uiManager.addWidget(this.uiDuelists[0], 'position:absolute; top:30px; left:0; width:20%');
 
     this.uiDuelists.push(new UIDuelist());
-    this.uiDuelists[1].setDuelist(this.duel.duelists[1]);
+    this.uiDuelists[1].setDuelist(this.duel.getDuelists()[1]);
     GWE.uiManager.addWidget(this.uiDuelists[1], 'position:absolute; top:30px; right:0; width:20%');
 
     this.uiCardDetail = new UICardDetail();
@@ -72,7 +73,6 @@ class GameScreen extends GWE.Screen {
     this.duel.startup();
   }
 
-  // done
   selectLocation(range, predicateCard, required, response) {
     return new Promise(resolve => {
       GWE.uiManager.focus(this.uiBoard);
@@ -113,7 +113,6 @@ class GameScreen extends GWE.Screen {
     });
   }
 
-  // done
   handleDuelNewTurn() {
     this.uiDuelists[this.duel.getOpponentDuelistIndex()].hideSelection();
     this.uiDuelists[this.duel.getCurrentDuelistIndex()].showSelection();
@@ -123,19 +122,16 @@ class GameScreen extends GWE.Screen {
     }
   }
 
-  // done
   handleDuelSelectLocation(data) {
     return this.selectLocation(data.range, data.predicateCard, data.required, data.response);
   }
 
-  // done
   handleBoardSlotUnfocused() {
     this.uiCardDetail.setCard(null);
   }
 
-  // done
   handleBoardSlotFocused(data) {
-    if (data.slot && data.slot.getCard() && data.slot.isFlipped() == false) {
+    if (data.slot instanceof UICardSlot && data.slot.getCard() && data.slot.isFlipped() == false) {
       this.uiCardDetail.setCard(data.slot.getCard());
     }
     else {
@@ -143,7 +139,6 @@ class GameScreen extends GWE.Screen {
     }
   }
 
-  // done
   handleDuelistEnterPressed() {
     this.uiActionMenu.clear();
 
@@ -207,48 +202,45 @@ class GameScreen extends GWE.Screen {
     GWE.uiManager.focus(this.uiActionMenu);
   }
 
-  // done
   async handleDuelistSpacePressed() {
     GWE.uiManager.focus(this.uiBoard);
     await GWE.eventManager.wait(this.uiBoard, 'E_ECHAP_PRESSED');
     GWE.uiManager.focus(this.uiDuelists[this.duel.getCurrentDuelistIndex()]);
   }
 
-  //done
   handleActionMenuClosed() {
     this.uiActionMenu.hide();
     GWE.uiManager.focus(this.uiDuelists[this.duel.getCurrentDuelistIndex()]);
   }
 
-  // done
   async handleActionMenuItemSelected(data) {
     this.uiActionMenu.hide();
 
-    if (data.item.getId() == 'DRAW') {
+    if (data.widget.getId() == 'DRAW') {
       let cmd = new DrawCommand(this.duel, 1);
       await cmd.exec();
     }
-    else if (data.item.getId() == 'SUMMON') {
+    else if (data.widget.getId() == 'SUMMON') {
       let cmd = new SummonCommand(this.duel);
       await cmd.exec();
     }
-    else if (data.item.getId() == 'SET') {
+    else if (data.widget.getId() == 'SET') {
       let cmd = new SetCommand(this.duel);
       await cmd.exec();
     }
-    else if (data.item.getId() == 'BATTLE') {
+    else if (data.widget.getId() == 'BATTLE') {
       let cmd = new BattleCommand(this.duel);
       await cmd.exec();
     }
-    else if (data.item.getId() == 'ACTIVATE') {
+    else if (data.widget.getId() == 'ACTIVATE') {
       let cmd = new ActivateCommand(this.duel);
       await cmd.exec();
     }
-    else if (data.item.getId() == 'CHANGE_POSITION') {
+    else if (data.widget.getId() == 'CHANGE_POSITION') {
       let cmd = new ChangePositionCommand(this.duel);
       await cmd.exec();
     }
-    else if (data.item.getId() == 'NEXT_PHASE') {
+    else if (data.widget.getId() == 'NEXT_PHASE') {
       let cmd = new NextPhaseCommand(this.duel);
       await cmd.exec();
     }

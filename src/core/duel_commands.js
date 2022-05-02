@@ -1,3 +1,4 @@
+let { PHASE, LOCATION } = require('./enums');
 let {  DirectAttackAction, DrawAction, SummonAction, SetAction, ChangePositionAction, BattleAction, NextPhaseAction, ActivateAction } = require('./duel_actions');
 
 class Command {

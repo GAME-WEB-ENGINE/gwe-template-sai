@@ -60,10 +60,10 @@ class UIDuelist extends GWE.UIWidget {
   }
 
   onKeyDownOnce(data) {
-    if (data.key == KEY_ENTER) {
+    if (data.key == GWE.InputKeyEnum.ENTER) {
       GWE.eventManager.emit(this, 'E_ENTER_PRESSED');
     }
-    else if (data.key == KEY_SPACE) {
+    else if (data.key == GWE.InputKeyEnum.SPACE) {
       GWE.eventManager.emit(this, 'E_SPACE_PRESSED');
     }
   }

@@ -1,4 +1,5 @@
 let { GWE } = require('gwe');
+let { CARD_TYPE, CARD_ELEMENT, SPELL_CARD_NATURE, SPELL_CARD_MODE, MONSTER_CARD_RACE } = require('../core/enums');
 
 class UICardDetail extends GWE.UIWidget {
   constructor() {
@@ -149,7 +150,7 @@ class UICardDetail extends GWE.UIWidget {
     }
     else {
       this.node.querySelector('.js-title').textContent = '--';
-      this.node.querySelector('.js-cover-img').src = '#';
+      this.node.querySelector('.js-cover-img').src = '';
       this.node.querySelector('.js-infos').textContent = '';
     }
   }

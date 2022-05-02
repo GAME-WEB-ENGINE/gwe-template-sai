@@ -1,7 +1,8 @@
 let fs = require('fs');
+let { LOCATION } = require('./enums');
 let { Deck } = require('./deck');
 let { Attributes } = require('./attributes');
-let { Field } = require('./field');
+let { Zone } = require('./zone');
 
 class DuelistAbstract {
   constructor(data) {
@@ -9,7 +10,7 @@ class DuelistAbstract {
     this.pictureFile = '';
     this.deck = null;
     this.attributes = null;
-    this.field = new Field();
+    this.zones = [];
 
     if (!data.hasOwnProperty('Name')) {
       return;
@@ -49,6 +50,23 @@ class DuelistAbstract {
     this.pictureFile = data['PictureFile'];
     this.deck = new Deck(data['Deck']);
     this.attributes = new Attributes(data['Attributes']);
+
+    let mzone = new Zone(LOCATION.MZONE);
+    mzone.push(null, null, null);
+    this.zones.push(mzone);
+
+    let szone = new Zone(LOCATION.SZONE);
+    szone.push(null, null, null);
+    this.zones.push(szone);
+
+    let fzone = new Zone(LOCATION.FZONE);
+    fzone.push(null);
+    this.zones.push(fzone);
+
+    this.zones.push(new Zone(LOCATION.DECK));
+    this.zones.push(new Zone(LOCATION.GRAVEYARD));
+    this.zones.push(new Zone(LOCATION.BANNISHED));
+    this.zones.push(new Zone(LOCATION.HAND));
   }
 
   getName() {
@@ -63,6 +81,10 @@ class DuelistAbstract {
     return this.deck;
   }
 
+  getAttributes() {
+    return this.attributes;
+  }
+
   getAttribute(key) {
     return this.attributes.get(key);
   }
@@ -73,6 +95,35 @@ class DuelistAbstract {
 
   incAttribute(key) {
     this.attributes.set(key, this.attributes.get(key) + 1);
+  }
+
+  getZone(location) {
+    return this.zones.find(z => z.getLocation() == location);
+  }
+
+  getCard(location, index) {
+    let zone = this.zones.find(z => z.getLocation() == location);
+    return zone[index];
+  }
+
+  insertCard(location, index, card) {
+    let zone = this.zones.find(z => z.getLocation() == location);
+    zone[index] = card;
+  }
+
+  removeCard(location, card) {
+    let zone = this.zones.find(z => z.getLocation() == location);
+    zone.splice(zone.indexOf(card), 1);
+  }
+
+  pushCard(location, card) {
+    let zone = this.zones.find(z => z.getLocation() == location);
+    zone.push(card);
+  }
+
+  popCard(location) {
+    let zone = this.zones.find(z => z.getLocation() == location);
+    return zone.pop();
   }
 
   getField() {

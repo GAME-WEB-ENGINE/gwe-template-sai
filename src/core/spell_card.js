@@ -1,5 +1,5 @@
 let fs = require('fs');
-let { CARD_TYPE, SPELL_CARD_MODE, SPELL_CARD_NATURE } = require('./enums');
+let { CARD_TYPE, SPELL_CARD_MODE, SPELL_CARD_NATURE, LOCATION, CARD_POS } = require('./enums');
 let { CARD_ACTIVATE_CONDITION_MAPPING } = require('./mappings/card_activate_condition_mapping');
 let { CARD_TRIGGER_CONDITION_MAPPING } = require('./mappings/card_trigger_condition_mapping');
 let { CARD_RELEASE_CONDITION_MAPPING } = require('./mappings/card_release_condition_mapping');
@@ -73,6 +73,10 @@ class SpellCard extends CardAbstract {
 
   getNature() {
     return this.nature;
+  }
+
+  getEffects() {
+    return this.effects;
   }
 
   isSetable() {

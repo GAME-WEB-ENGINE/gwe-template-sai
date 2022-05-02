@@ -12,28 +12,28 @@
       "CardId": "card_0001"
     },
     {
+      "CardTypeName": "SpellCard",
+      "CardId": "card_0000"
+    },
+    {
+      "CardTypeName": "SpellCard",
+      "CardId": "card_0000"
+    },
+    {
+      "CardTypeName": "SpellCard",
+      "CardId": "card_0000"
+    },
+    {
+      "CardTypeName": "SpellCard",
+      "CardId": "card_0000"
+    },
+    {
+      "CardTypeName": "SpellCard",
+      "CardId": "card_0000"
+    },
+    {
       "CardTypeName": "MonsterCard",
       "CardId": "card_0001"
-    },
-    {
-      "CardTypeName": "SpellCard",
-      "CardId": "card_0000"
-    },
-    {
-      "CardTypeName": "SpellCard",
-      "CardId": "card_0000"
-    },
-    {
-      "CardTypeName": "SpellCard",
-      "CardId": "card_0000"
-    },
-    {
-      "CardTypeName": "SpellCard",
-      "CardId": "card_0000"
-    },
-    {
-      "CardTypeName": "SpellCard",
-      "CardId": "card_0000"
     }
   ],
   "Attributes": {

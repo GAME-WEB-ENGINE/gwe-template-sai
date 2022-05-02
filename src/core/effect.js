@@ -1,3 +1,4 @@
+let { EFFECT_TARGET_TYPE } = require('./enums');
 let { EFFECT_MECHANIC_MAPPING } = require('./mappings/effect_mechanic_mapping');
 let { EFFECT_TARGET_CONDITION_MAPPING } = require('./mappings/effect_target_condition_mapping');
 

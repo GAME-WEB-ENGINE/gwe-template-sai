@@ -1,6 +1,6 @@
 let fs = require('fs');
 let { GWE } = require('gwe');
-let { LOCATION, PHASE, HAND_MAX } = require('./enums');
+let { LOCATION, PHASE, CARD_POS, EFFECT_TARGET_TYPE, SPELL_CARD_NATURE, CARD_TYPE, HAND_MAX } = require('./enums');
 let { HumanDuelist } = require('./duelist');
 let { ActivateAction } = require('./duel_actions');
 let { Turn } = require('./turn');
@@ -26,7 +26,7 @@ class Duel {
       for (let card of deck.getCards()) {
         card.setOwner(i);
         card.setControler(i);
-        duelist.field.deck.push(card);
+        duelist.pushCard(LOCATION.DECK, card);
       }
 
       this.duelists.push(duelist);
@@ -36,6 +36,10 @@ class Duel {
   static createFromFile(path) {
     let data = JSON.parse(fs.readFileSync(path));
     return new Duel(data);
+  }
+
+  getDuelists() {
+    return this.duelists;
   }
 
   startup() {
@@ -237,174 +241,166 @@ class Duel {
     return response;
   }
 
-  // here
-
   async operationDraw(duelistIndex, numCards) {
-    if (this.duelists[duelistIndex].field.hand.length + numCards > HAND_MAX) {
-      for (let i = 0; i < this.duelists[duelistIndex].field.hand.length + numCards - HAND_MAX; i++) {
+    let handZone = this.duelists[duelistIndex].getZone(LOCATION.HAND);
+    if (handZone.length + numCards > HAND_MAX) {
+      for (let i = 0; i < handZone.length + numCards - HAND_MAX; i++) {
         let loc = await this.operationSelectLocation([[LOCATION.HAND], 0], card => card);
-        this.duelists[duelistIndex].field.hand.remove(loc.card);
+        this.duelists[duelistIndex].removeCard(LOCATION.HAND, loc.card);
       }
     }
 
     while (numCards-- > 0) {
-      let card = this.duelists[duelistIndex].field.deck.pop();
-      this.duelists[duelistIndex].field.hand.push(card);
-      card.location = LOCATION.HAND;
+      let card = this.duelists[duelistIndex].popCard(LOCATION.DECK);
+      this.duelists[duelistIndex].pushCard(LOCATION.HAND, card);
+      card.setLocation(LOCATION.HAND);
     }
   }
 
   async operationRestore(duelistIndex, amount) {
-    this.duelists[duelistIndex].attributes.add('LIFEPOINTS', + amount);
-    this.duelists[duelistIndex].emit('E_RESTORE', { amount: amount });
+    let attributes = this.duelists[duelistIndex].getAttributes();
+    attributes.add('LIFEPOINTS', + amount);
+    GWE.eventManager.emit(this.duelists[duelistIndex], 'E_RESTORE', { amount: amount });
   }
 
   async operationDamage(duelistIndex, amount) {
-    this.duelists[duelistIndex].attributes.add('LIFEPOINTS', - amount);
-    this.duelists[duelistIndex].emit('E_DAMAGE', { amount: amount });
+    let attributes = this.duelists[duelistIndex].getAttributes();
+    attributes.add('LIFEPOINTS', - amount);
+    GWE.eventManager.emit(this.duelists[duelistIndex], 'E_DAMAGE', { amount: amount });
   }
 
   async operationSummon(monsterCard, index) {
-    this.duelists[monsterCard.controler].field.hand.remove(monsterCard);
-    this.duelists[monsterCard.controler].field.mzone[index] = monsterCard;
-    monsterCard.position = CARD_POS.ATTACK;
-    monsterCard.location = LOCATION.MZONE;
+    this.duelists[monsterCard.getControler()].removeCard(LOCATION.HAND, monsterCard);
+    this.duelists[monsterCard.getControler()].insertCard(LOCATION.MZONE, index, monsterCard);
+    monsterCard.setPosition(CARD_POS.ATTACK);
+    monsterCard.setLocation(LOCATION.MZONE);
   }
 
   async operationSet(spellCard, index) {
-    this.duelists[spellCard.controler].field.hand.remove(spellCard);
-    this.duelists[spellCard.controler].field.szone[index] = spellCard;
-    spellCard.position = CARD_POS.FACEDOWN;
-    spellCard.location = LOCATION.SZONE;
+    this.duelists[spellCard.getControler()].removeCard(LOCATION.HAND, spellCard);
+    this.duelists[spellCard.getControler()].insertCard(LOCATION.SZONE, index, spellCard);
+    spellCard.setPosition(CARD_POS.FACEDOWN);
+    spellCard.setLocation(LOCATION.SZONE);
   }
 
   async operationChangePosition(card, position) {
-    card.position = position;
+    card.setPosition(position);
   }
 
   async operationBattle(attackerCard, targetCard) {
-    let targetValue = targetCard.position == CARD_POS.ATTACK ? targetCard.getAttribute('ATK') : targetCard.getAttribute('DEF');
+    let targetValue = targetCard.getPosition() == CARD_POS.ATTACK ? targetCard.getAttribute('ATK') : targetCard.getAttribute('DEF');
     let damage = attackerCard.getAttribute('ATK') - targetValue;
 
     if (damage > 0) {
       this.operationDestroy(targetCard);
-      this.operationDamage(targetCard.controler, Math.abs(damage));
+      this.operationDamage(targetCard.getControler(), Math.abs(damage));
     }
     else if (damage < 0) {
       this.operationDestroy(attackerCard);
-      this.operationDamage(attackerCard.controler, Math.abs(damage));
+      this.operationDamage(attackerCard.getControler(), Math.abs(damage));
     }
   }
 
   async operationNextPhase() {
-    let nextPhaseIndex = this.currentTurn.phases.indexOf(this.currentTurn.currentPhase) + 1;
-    while (this.currentTurn.phases[nextPhaseIndex].disabled && nextPhaseIndex < this.currentTurn.phases.length) {
+    let phases = this.currentTurn.getPhases();
+    let nextPhaseIndex = phases.indexOf(this.currentTurn.getCurrentPhase()) + 1;
+    while (phases[nextPhaseIndex].isDisabled() && nextPhaseIndex < phases.length) {
       nextPhaseIndex++;
     }
 
-    this.currentTurn.currentPhase = this.currentTurn.phases[nextPhaseIndex];
+    this.currentTurn.setCurrentPhase(phases[nextPhaseIndex]);
   }
 
   async operationChangePhase(phaseId) {
-    let phase = this.currentTurn.phases.find(phase => phase.id == phaseId);
+    let phase = this.currentTurn.getPhase(phaseId);
     if (!phase) {
       throw new Error('Duel::operationChangePhase : phase not found !');
     }
-    if (phase.disabled) {
+    if (phase.isDisabled()) {
       throw new Error('Duel::operationChangePhase : phase is disabled !');
     }
 
-    this.currentTurn.currentPhase = phase;
+    this.currentTurn.setCurrentPhase(phase);
   }
 
   async operationAddDuelistModifier(duelistIndex, modifier) {
-    this.duelists[duelistIndex].attributes.addModifier(modifier);
+    let attributes = this.duelists[duelistIndex].getAttributes();
+    attributes.addModifier(modifier);
   }
 
   async operationRemoveDuelistModifier(duelistIndex, modifierId) {
-    this.duelists[duelistIndex].attributes.removeModifierIf(m => m.id == modifierId);
+    let attributes = this.duelists[duelistIndex].getAttributes();
+    attributes.removeModifierIf(m => m.getId() == modifierId);
   }
 
   async operationAddCardModifier(card, modifier) {
-    card.attributes.addModifier(modifier);
+    let attributes = card.getAttributes();
+    attributes.addModifier(modifier);
   }
 
   async operationRemoveCardModifier(card, modifierId) {
-    card.attributes.removeModifierIf(m => m.id == modifierId);
+    let attributes = card.getAttributes();
+    attributes.removeModifierIf(m => m.getId() == modifierId);
   }
 
   async operationDestroy(card) {
-    if (card.type == CARD_TYPE.SPELL) {
-      for (let effect of card.effects) {
-        for (let targetCard of effect.targetCards) {
-          targetCard.attributes.removeModifierIf(m => m.linked && m.linkedEffect == effect);
+    if (card.getType() == CARD_TYPE.SPELL) {
+      for (let effect of card.getEffects()) {
+        for (let targetCard of effect.getTargetCards()) {
+          let attributes = targetCard.getAttributes();
+          attributes.removeModifierIf(m => m.isLinked() && m.getLinkedEffect() == effect);
         }
 
         for (let duelist of this.duelists) {
-          duelist.attributes.removeModifierIf(m => m.linked && m.linkedEffect == effect);
+          let attributes = duelist.getAttributes();
+          attributes.removeModifierIf(m => m.isLinked() && m.getLinkedEffect() == effect);
         }
       }
     }
 
     this.utilsRemoveCard(card);
-    this.duelists[card.controler].field.graveyard.push(card);
-    card.position = CARD_POS.FACEDOWN;
-    card.location = LOCATION.GRAVEYARD;
+    this.duelists[card.getControler()].pushCard(LOCATION.GRAVEYARD, card);
+    card.setPosition(CARD_POS.FACEDOWN);
+    card.setLocation(LOCATION.GRAVEYARD);
   }
 
   async operationActivateCardEffect(spellCard, effectIndex) {
-    let targetCardArray = [];
-    let effect = spellCard.effects[effectIndex];
+    let targetCards = [];
+    let effects = spellCard.getEffects();
+    let effect = effects[effectIndex];
 
-    if (effect.targetType == EFFECT_TARGET_TYPE.SINGLE) {
-      let loc = await this.operationSelectRequiredLocation(effect.targetRange, card => card && effect.isTarget(this, card));
-      targetCardArray.push(loc.card);
+    if (effect.getTargetType() == EFFECT_TARGET_TYPE.SINGLE) {
+      let loc = await this.operationSelectRequiredLocation(effect.getTargetRange(), card => card && effect.isTarget(this, card));
+      targetCards.push(loc.card);
     }
-    else if (effect.targetType == EFFECT_TARGET_TYPE.FIELD) {
-      targetCardArray = this.utilsQuery(spellCard.controler, effect.targetRange, card => card && effect.isTarget(this, card));
+    else if (effect.getTargetType() == EFFECT_TARGET_TYPE.FIELD) {
+      targetCards = this.utilsQuery(spellCard.getControler(), effect.getTargetRange(), card => card && effect.isTarget(this, card));
     }
-    else if (effect.targetType == EFFECT_TARGET_TYPE.NONE) {
-      targetCardArray = [null];
+    else if (effect.getTargetType() == EFFECT_TARGET_TYPE.NONE) {
+      targetCards = [null];
     }
 
-    for (let targetCard of targetCardArray) {
+    for (let targetCard of targetCards) {
       effect.apply(this, spellCard, targetCard);
       effect.addTargetCard(targetCard);
     }
   }
 
   utilsRemoveCard(card) {
-    if (card.location == LOCATION.MZONE) {
-      let index = this.duelists[card.controler].field.mzone.indexOf(card);
-      this.duelists[card.controler].field.mzone[index] = null;
-    }
-    else if (card.location == LOCATION.SZONE) {
-      let index = this.duelists[card.controler].field.szone.indexOf(card);
-      this.duelists[card.controler].field.szone[index] = null;
-    }
-    else if (card.location == LOCATION.FZONE) {
-      let index = this.duelists[card.controler].field.fzone.indexOf(card);
-      this.duelists[card.controler].field.fzone[index] = null;
-    }
-    else if (card.location == LOCATION.DECK) {
-      this.duelists[card.controler].field.deck.remove(card);
-    }
-    else if (card.location == LOCATION.GRAVEYARD) {
-      this.duelists[card.controler].field.graveyard.remove(card);
-    }
-    else if (card.location == LOCATION.BANNISHED) {
-      this.duelists[card.controler].field.bannished.remove(card);
-    }
-    else if (card.location == LOCATION.HAND) {
-      this.duelists[card.controler].field.hand.remove(card);
+    let duelist = this.duelists[card.getOwner()];
+
+    if (card.getLocation() == LOCATION.MZONE || card.getLocation() == LOCATION.SZONE || card.getLocation() == LOCATION.FZONE) {
+      let zone = duelist.getZone(card.getLocation());
+      let index = zone.indexOf(card);
+      duelist.insertCard(card.getLocation(), index, null);
     }
     else {
-      throw new Error('Duel::removeCard: card not found');
+      duelist.removeCard(card.getLocation(), card);
     }
   }
 
   utilsQuery(duelistIndex, range, cardPredicate = (card) => true) {
-    let cardArray = [];
+    let cards = [];
     let currentDuelistIndex = duelistIndex;
     let opponentDuelistIndex = duelistIndex == 0 ? 1 : 0;
 
@@ -414,31 +410,13 @@ class Duel {
       }
 
       let rangeDuelistIndex = i == 0 ? currentDuelistIndex : opponentDuelistIndex;
-
-      if (range[i].includes(LOCATION.MZONE)) {
-        cardArray = cardArray.concat(this.duelists[rangeDuelistIndex].field.mzone.filter(cardPredicate));
-      }
-      if (range[i].includes(LOCATION.SZONE)) {
-        cardArray = cardArray.concat(this.duelists[rangeDuelistIndex].field.szone.filter(cardPredicate));
-      }
-      if (range[i].includes(LOCATION.FZONE)) {
-        cardArray = cardArray.concat(this.duelists[rangeDuelistIndex].field.fzone.filter(cardPredicate));
-      }
-      if (range[i].includes(LOCATION.GRAVEYARD)) {
-        cardArray = cardArray.concat(this.duelists[rangeDuelistIndex].field.graveyard.filter(cardPredicate));
-      }
-      if (range[i].includes(LOCATION.BANNISHED)) {
-        cardArray = cardArray.concat(this.duelists[rangeDuelistIndex].field.bannished.filter(cardPredicate));
-      }
-      if (range[i].includes(LOCATION.DECK)) {
-        cardArray = cardArray.concat(this.duelists[rangeDuelistIndex].field.deck.filter(cardPredicate));
-      }
-      if (range[i].includes(LOCATION.HAND)) {
-        cardArray = cardArray.concat(this.duelists[rangeDuelistIndex].field.hand.filter(cardPredicate));
+      for (let j = 0; j < range[i].length; j++) {
+        let zone = this.duelists[rangeDuelistIndex].getZone(range[i][j]);
+        cards = cards.concat(zone.filter(cardPredicate));
       }
     }
 
-    return cardArray;
+    return cards;
   }
 
   handleAI() {

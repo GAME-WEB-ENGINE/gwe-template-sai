@@ -1,20 +1,20 @@
 {
   "Id": "card_0000",
-  "Type": "GOTA_CARD_TYPE_SPELL",
+  "Type": "SPELL",
   "Name": "Benediction des mages",
   "Text": "Ciblez un monstre de type magicien sur votre terrain; Il gagne 500 ATK.",
   "CoverFile": "assets/models/card_0000/cover.png",
   "Attributes": {
-    "ELEMENT": "GOTA_CARD_ELEMENT_LIGHT"
+    "ELEMENT": "LIGHT"
   },
-  "Mode": "GOTA_SPELL_CARD_MODE_ACTIVATE",
-  "Nature": "GOTA_SPELL_CARD_NATURE_NORMAL",
+  "Mode": "ACTIVATE",
+  "Nature": "NORMAL",
   "Effects": [
     {
-      "TargetType": "GOTA_EFFECT_TARGET_TYPE_SINGLE",
-      "TargetRange": [["GOTA_LOCATION_MZONE"], 0],
+      "TargetType": "SINGLE",
+      "TargetRange": [["MZONE"], 0],
       "TargetConditionId": "IS_RACE",
-      "TargetConditionOpts": { "race": "GOTA_MONSTER_CARD_RACE_SPELLCASTER" },
+      "TargetConditionOpts": { "race": "SPELLCASTER" },
       "MechanicId": "ADD_CARD_MODIFIER",
       "MechanicOpts": {
         "modifierData": {
