@@ -1,4 +1,4 @@
-let { CARD_ELEMENT } = require('./enums');
+let { CARD_ELEMENT, LOCATION } = require('./enums');
 
 class CardAbstract {
   constructor(data) {
@@ -78,8 +78,16 @@ class CardAbstract {
     return this.owner;
   }
 
+  setOwner(owner) {
+    this.owner = owner;
+  }
+
   getControler() {
     return this.controler;
+  }
+
+  setControler(controler) {
+    this.controler = controler;
   }
 
   getPosition() {
@@ -92,6 +100,10 @@ class CardAbstract {
 
   getTurnCounter() {
     return this.turnCounter;
+  }
+
+  incTurnCounter() {
+    this.turnCounter++;
   }
 
   setAttribute(key, value) {

@@ -1,5 +1,3 @@
-// DONE
-
 let { GWE } = require('gwe');
 let { CARD_POS } = require('../core/enums');
 
@@ -32,20 +30,40 @@ class UICardSlot extends GWE.UIWidget {
     this.node.classList.toggle('u-selectable', this.selectable);
   }
 
+  getCard() {
+    return this.card;
+  }
+
   setCard(card) {
     this.card = card ? card : null;
+  }
+
+  getDuelistIndex() {
+    return this.duelistIndex;
   }
 
   setDuelistIndex(duelistIndex) {
     this.duelistIndex = duelistIndex;
   }
 
+  getLocation() {
+    return this.location;
+  }
+
   setLocation(location) {
     this.location = location;
   }
 
+  getIndex() {
+    return this.index;
+  }
+
   setIndex(index) {
     this.index = index;
+  }
+
+  isFlipped() {
+    return this.flipped;
   }
 
   setFlipped(flipped) {

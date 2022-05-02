@@ -59,3 +59,5 @@ EFFECT_MECHANIC_MAPPING['REMOVE_CARD_MODIFIER'] = async function (duel, card, ef
 }
 
 module.exports.EFFECT_MECHANIC_MAPPING = EFFECT_MECHANIC_MAPPING;
+
+const OPPONENT_OF = (duelistIndex) => duelistIndex == 0 ? 1 : 0;

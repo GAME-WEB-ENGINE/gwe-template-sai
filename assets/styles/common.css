@@ -14,372 +14,18 @@
 }
 
 /*---------------------------------------------------------------------------------------------*/
-/* UI HEROES ITEM 
+/* UI DUELIST
 /*---------------------------------------------------------------------------------------------*/
-.UIHeroesItem {
-  display: flex;
-  flex-direction: row;
-  padding: 8px;
-  width: 100%;
-}
-.UIHeroesItem.u-disabled {
-  pointer-events: none;
-  opacity: 0.5;
-}
-.UIMenu.u-focused .UIHeroesItem.u-focused {
-  background-color: rgb(98, 211, 255);
-}
-.UIHeroesItem.u-selected {
-  background-color: rgb(98, 255, 106);
-}
-.UIHeroesItem-picture {
-  height: 96px;
-  margin-right: 8px;
-}
-.UIHeroesItem-body {
-  flex: 1;
-  line-height: 24px;
-  color: #e7e7e7;
-  text-align: left;
-}
-.UIHeroesItem-body-stats {
-  display: block;
-}
-.UIHeroesItem-body-stats-item {
-  display: flex;
-  line-height: 24px;
-  margin-right: 16px;
-}
-.UIHeroesItem-body-stats-item-name {
-  margin-right: 5px;
-  color: #09d6ff;
-  font-weight: bold;
-}
-.UIHeroesItem-body-stats-item-separator {
-  flex: 1;
-  align-self: center;
-  margin-left: 5px;
-  margin-right: 5px;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-style: dashed;
-}
-.UIHeroesItem-body-stats-item-value {
-  margin-left: 5px;
-  text-align: right;
-}
-
-/*---------------------------------------------------------------------------------------------*/
-/* UI HEROES EQUIPMENT ITEM
-/*---------------------------------------------------------------------------------------------*/
-.UIHeroesEquipmentItem {
-  display: flex;
-  flex-direction: row;
-  padding: 8px;
-  width: 100%;
-}
-.UIHeroesEquipmentItem.u-disabled {
-  pointer-events: none;
-  opacity: 0.5;
-}
-.UIMenu.u-focused .UIHeroesEquipmentItem.u-focused {
-  background-color: rgb(98, 211, 255);
-}
-.UIHeroesEquipmentItem.u-selected {
-  background-color: rgb(98, 255, 106);
-}
-.UIHeroesEquipmentItem-picture {
-  height: 96px;
-  margin-right: 8px;
-}
-.UIHeroesEquipmentItem-body {
-  flex: 1;
-  line-height: 24px;
-  color: #e7e7e7;
-  text-align: left;
-}
-.UIHeroesEquipmentItem-body-stats {
-  display: block;
-}
-.UIHeroesEquipmentItem-body-stats-item {
-  display: flex;
-  line-height: 24px;
-  margin-right: 16px;
-}
-.UIHeroesEquipmentItem-body-stats-item-name {
-  margin-right: 5px;
-  color: #09d6ff;
-  font-weight: bold;
-}
-.UIHeroesEquipmentItem-body-stats-item-separator {
-  flex: 1;
-  align-self: center;
-  margin-left: 5px;
-  margin-right: 5px;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-style: dashed;
-}
-.UIHeroesEquipmentItem-body-stats-item-value1 {
-  color: #fff;
-  text-align: right;
-  margin-left: 5px;
-}
-.UIHeroesEquipmentItem-body-stats-item-arrow {
-  line-height: 24px;
-  margin-left: 16px;
-  margin-right: 16px;
-}
-.UIHeroesEquipmentItem-body-stats-item-arrow::after {
-  content: '->';
-}
-.UIHeroesEquipmentItem-body-stats-item-value2 {
-  min-width: 48px;
-  line-height: 24px;
-  text-align: left;
-}
-
-/*---------------------------------------------------------------------------------------------*/
-/* UI STATUS 
-/*---------------------------------------------------------------------------------------------*/
-.UIStatus {
+.UIDuelist {
   display: flex;
   flex-direction: column;
-  padding: 8px 16px;
-  border: 10px solid;
-  border-image: url(../../assets/textures/ui_border.png) 3 fill;
-}
-.UIStatus-avatar {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  margin-bottom: 24px;
-}
-.UIStatus-avatar-picture {
-  height: 96px;
-  margin-right: 8px;
-}
-.UIStatus-avatar-name {
-  display: block;
-  line-height: 24px;
-  color: #e7e7e7;
-  text-align: left;
-}
-.UIStatus-title {
-  display: block;
-  margin-bottom: 5px;
-  border-bottom: 2px solid;
-}
-.UIStatus-section {
-  margin-bottom: 15px;
-}
-.UIStatus-stats {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 15px;
-}
-.UIStatus-stats-item {
-  line-height: 24px;
-  display: inline-flex;
-  margin-right: 16px;
-}
-.UIStatus-stats-item-name {
-  margin-right: 5px;
-  color: #09d6ff;
-  font-weight: bold;
-}
-.UIStatus-stats-item-separator {
-  flex: 1;
-  align-self: center;
-  margin-left: 5px;
-  margin-right: 5px;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-style: dashed;
-}
-.UIStatus-stats-item-value {
-  color: #fff;
-  margin-left: 16px;
-  text-align: right;
-}
-.UIStatus-stuffs {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 15px;
-}
-.UIStatus-stuffs-item {
-  line-height: 24px;
-  display: inline-flex;
-  margin-right: 16px;
-}
-.UIStatus-stuffs-item-name {
-  margin-right: 5px;
-  color: #09d6ff;
-  font-weight: bold;
-}
-.UIStatus-stuffs-item-separator {
-  flex: 1;
-  align-self: center;
-  margin-left: 5px;
-  margin-right: 5px;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-style: dashed;
-}
-.UIStatus-stuffs-item-value {
-  color: #fff;
-  margin-left: 16px;
-  text-align: right;
-}
-
-/*---------------------------------------------------------------------------------------------*/
-/* UI ITEMS ITEM 
-/*---------------------------------------------------------------------------------------------*/
-.UIInventoryItem {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px;
-  text-align: left;
-}
-.UIInventoryItem.u-disabled {
-  pointer-events: none;
-  opacity: 0.5;
-}
-.UIMenu.u-focused .UIInventoryItem.u-focused {
-  background-color: rgb(98, 211, 255);
-}
-.UIInventoryItem.u-selected {
-  background-color: rgb(98, 255, 106);
-}
-UIInventoryItem-name {
-  margin-right: 10px;
-  flex: 2;
-}
-UIInventoryItem-quantity, UIInventoryItem-price {
-  display: none;
-  margin-left: 10px;
-  text-align: right;
-}
-
-/*---------------------------------------------------------------------------------------------*/
-/* UI BATTLE STATUS 
-/*---------------------------------------------------------------------------------------------*/
-.UIBattleStatus {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding-left: 5px;
-  padding-right: 5px;
-  border: 10px solid;
-  border-image: url(../../assets/textures/ui_border.png) 3 fill;
-}
-.UIBattleStatus-numTurns {
-  display: flex;
-  align-items: center;
-}
-.UIBattleStatus-pictures {
-  display: flex;
-  flex-direction: row;
-}
-.UIBattleStatus-pictures-item {
-  height: 100%;
-}
-
-/*---------------------------------------------------------------------------------------------*/
-/* UI EFFECTS ITEM 
-/*---------------------------------------------------------------------------------------------*/
-.UIEffectsItem {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px;
-  text-align: left;
-}
-.UIEffectsItem.u-disabled {
-  pointer-events: none;
-  opacity: 0.5;
-}
-.UIMenu.u-focused .UIEffectsItem.u-focused {
-  background-color: rgb(98, 211, 255);
-}
-.UIEffectsItem.u-selected {
-  background-color: rgb(98, 255, 106);
-}
-.UIEffectsItem-name {
-  flex: 1;
-}
-
-/*---------------------------------------------------------------------------------------------*/
-/* UI BATTLE AREA
-/*---------------------------------------------------------------------------------------------*/
-.UIBattleArea {
-  display: block;
-  position:relative;
-}
-.UIBattleArea-bg {
   position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  padding: 10px;
 }
-
-/*---------------------------------------------------------------------------------------------*/
-/* UI BATTLE FIGHTER
-/*---------------------------------------------------------------------------------------------*/
-.UIBattleFighter {
-  display: block;
+.UIDuelist.u-shake {
+  animation: ui-duelist-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
-.UIBattleFighter-header {
-  position:relative;
-}
-.UIBattleFighter-header-name {
-  display: block;
-  text-align:center;
-  text-transform: capitalize;
-  height: 16px;
-  background-color:rgba(0, 0, 0, 0.5);
-  color:#FFF;
-}
-.UIBattleFighter-header-lifebar {
-  position: relative;
-  display: block;
-  height: 16px;
-  margin-top: 10px;
-  background-color:rgba(0, 0, 0, 0.5);
-}
-.UIBattleFighter-header-lifebar-progress {
-  position:absolute;
-  top:0;
-  right:0;
-  bottom:0;
-  left:0;
-  width: 0;
-  background-color: #9eff4f;
-  transition: width 1s;
-}
-.UIBattleFighter-header-seals {
-  display: flex;
-  margin-top: 10px;
-  height: 18px;
-}
-.UIBattleFighter-header-seals-item {
-  margin-right: 5px;
-}
-.UIBattleFighter-body {
-  position: relative;
-}
-.UIBattleFighter-body-characterSprite {
-  position: relative;
-  z-index:0;
-}
-.UIBattleFighter-body-effectSprite {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index:1;
-}
-.UIBattleFighter-body-toast {
+.UIDuelist-toast {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -388,23 +34,34 @@ UIInventoryItem-quantity, UIInventoryItem-price {
   font-size: 16px;
   text-shadow: rgb(0 0 0) 2px 2px 2px;
 }
-/* specifications */
-.UIBattleFighter--shake {
-  animation: battle-fighter-widget-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+.UIDuelist-picture-img {
+  position: relative;
+  width:100%;
 }
-.UIBattleFighter.u-selected {
-  background-color: rgb(145, 255, 0);
-  box-shadow: 0px 0px 2px 6px rgb(145, 255, 0);
-  filter:brightness(1.25);
+.UIDuelist-infos {
+  display: block;
 }
-.UIBattleFighter.u-focused {
-  display: block !important;
+.UIDuelist-infos-name {
+  font-weight: bold;
 }
-.UIBattleFighter.u-focused .UIBattleFighter-header-name {
-  background-color:red;
+.UIDuelist.u-showSelection .UIDuelist-infos-name {
+  animation-name: ui-duelist-infos-name-selected;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  animation-direction: alternate;
 }
-/* animations */
-@keyframes battle-fighter-widget-shake {
+
+@keyframes ui-duelist-infos-name-selected {
+  from {
+    color: #62abff;
+  }
+  to {
+    color: #a3ceff;
+  }
+}
+
+@keyframes ui-duelist-shake {
   10%, 90% {
     transform: translateX(-1px);
   }
@@ -417,4 +74,206 @@ UIInventoryItem-quantity, UIInventoryItem-price {
   40%, 60% {
     transform: translateX(4px);
   }
+}
+
+@keyframes ui-duelist-toast {
+  from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(0, calc(-151px + 100%));
+  }
+}
+
+/*---------------------------------------------------------------------------------------------*/
+/* UI CARD SLOT
+/*---------------------------------------------------------------------------------------------*/
+.UICardSlot {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 60px;
+  border: 1px solid white;
+  border-radius: 4px;
+  animation-name: ui-card-slot-fade-in;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in-out;
+}
+.UICardSlot-bg {
+  position: absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background-size: cover;
+}
+.UICardSlot.u-focused {
+  border-color: #74ff52;
+}
+.UICardSlot.u-selectable {
+  box-shadow: 2px 2px 2px 1px rgb(255 0 0);
+}
+@keyframes ui-card-slot-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/*---------------------------------------------------------------------------------------------*/
+/* UI STACK SLOT
+/*---------------------------------------------------------------------------------------------*/
+.UIStackSlot {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 60px;
+  border: 1px solid white;
+  border-radius: 4px;
+  animation-name: ui-stack-slot-fade-in;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in-out;
+}
+.UIStackSlot-bg {
+  position: absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background-size: cover;
+}
+.UIStackSlot-numCards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:10;
+}
+.UIStackSlot.u-focused {
+  border-color: #74ff52;
+}
+.UIStackSlot.u-selectable {
+  box-shadow: 2px 2px 2px 1px rgb(255 0 0);
+}
+@keyframes ui-stack-slot-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/*---------------------------------------------------------------------------------------------*/
+/* UI BOARD
+/*---------------------------------------------------------------------------------------------*/
+.UIBoard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+.UIBoard-fields {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.UIBoard-field {
+  display: block;
+}
+.UIBoard-field-zone {
+  position: absolute;
+}
+.UIBoard-field-zone[data-location="MZONE"] {
+  width: 40px;
+  height: 60px;
+  background-image: url('../../assets/textures/zone_monster.png');
+}
+.UIBoard-field-zone[data-location="SZONE"] {
+  width: 40px;
+  height: 60px;
+  background-image: url('../../assets/textures/zone_magic.png');
+}
+.UIBoard-field-zone[data-location="FZONE"] {
+  width: 40px;
+  height: 60px;
+  background-image: url('../../assets/textures/zone_unique_field.png');
+}
+.UIBoard-field-zone[data-location="DECK"] {
+  width: 40px;
+  height: 60px;
+  background-image: url('../../assets/textures/zone_deck.png');
+}
+.UIBoard-field-zone[data-location="GRAVEYARD"] {
+  width: 40px;
+  height: 60px;
+  background-image: url('../../assets/textures/zone_graveyard.png');
+}
+.UIBoard-field-zone[data-location="HAND"] {
+  position: absolute;
+  display: flex;
+}
+.UIBoard-field-zone[data-location="HAND"] .UICardSlot {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+/*---------------------------------------------------------------------------------------------*/
+/* UI TURN
+/*---------------------------------------------------------------------------------------------*/
+.UITurn {
+  display: flex;
+  justify-content: center;
+}
+.UITurn-phase {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.UITurn-phase.u-active {
+  color: red;
+}
+
+/*---------------------------------------------------------------------------------------------*/
+/* UI CARD DETAIL
+/*---------------------------------------------------------------------------------------------*/
+.UICardDetail {
+  display: block;
+}
+.UICardDetail-title {
+  display: block;
+  color: #FFF;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  background-color: #000;
+}
+.UICardDetail-body {
+  display: flex;
+}
+.UICardDetail-body-coverImg {
+  position: relative;
+  max-height: 320px;
+}
+.UICardDetail-body-infos {
+  padding: 5px;
+  color: #FFF;
+  white-space: pre-line;
+}
+.UICardDetail-body-infos-stats {
+  display:flex;
+  justify-content:space-between;
+  padding-top:5px;
+  margin-top: auto;
+  border-top: 1px solid #FFF;
+}
+.UICardDetail-body-infos-stats-item {
+ margin-left:10px
 }

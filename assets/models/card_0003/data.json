@@ -1,0 +1,32 @@
+{
+  "Id": "card_0003",
+  "Type": "GOTA_CARD_TYPE_SPELL",
+  "Name": "Tourmenteur",
+  "Text": "Tant que cette carte est sur le terrain; Tous les monstres sur le terrain adverse perdent 300 DEF.",
+  "CoverFile": "assets/models/card_0003/cover.png",
+  "Attributes": {
+    "ELEMENT": "GOTA_CARD_ELEMENT_DARK"
+  },
+  "Mode": "GOTA_SPELL_CARD_MODE_ACTIVATE",
+  "Nature": "GOTA_SPELL_CARD_NATURE_CONTINUOUS",
+  "ReleaseConditionId": "IS_ENDLESS",
+  "ReleaseConditionOpts": {},
+  "Effects": [
+    {
+      "TargetType": "GOTA_EFFECT_TARGET_TYPE_FIELD",
+      "TargetRange": [["GOTA_LOCATION_MZONE"], 0],
+      "TargetConditionId": "IS_TYPE",
+      "TargetConditionOpts": { "race": "GOTA_CARD_TYPE_MONSTER" },
+      "MechanicId": "ADD_CARD_MODIFIER",
+      "MechanicOpts": {
+        "modifierData": {
+          "Type": "SUB",
+          "AttributeKey": "DEF",
+          "Value": "300",
+          "Stackable": false,
+          "Linked": true
+        }
+      }
+    }
+  ]
+}

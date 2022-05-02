@@ -3,7 +3,6 @@ let {  DirectAttackAction, DrawAction, SummonAction, SetAction, ChangePositionAc
 class Command {
   constructor(duel) {
     this.duel = duel;
-    this.currentDuelist = this.duel.duelists[this.duel.currentDuelistIndex];
   }
 
   async exec() {
@@ -18,6 +17,9 @@ class Command {
 class DrawCommand extends Command {
   constructor(duel) {
     super(duel);
+    this.currentDuelist = this.duel.getCurrentDuelist();
+    this.currentTurn = this.duel.getCurrentTurn();
+    this.currentPhase = this.currentTurn.getCurrentPhase();
   }
 
   async exec() {
@@ -25,7 +27,7 @@ class DrawCommand extends Command {
   }
 
   isConditionCheck() {
-    if (this.duel.currentTurn.currentPhase.id != PHASE.DRAW) {
+    if (this.currentPhase.getId() != PHASE.DRAW) {
       return false;
     }
 
@@ -40,6 +42,9 @@ class DrawCommand extends Command {
 class SummonCommand extends Command {
   constructor(duel) {
     super(duel);
+    this.currentDuelist = this.duel.getCurrentDuelist();
+    this.currentTurn = this.duel.getCurrentTurn();
+    this.currentPhase = this.currentTurn.getCurrentPhase();
   }
 
   async exec() {
@@ -63,7 +68,7 @@ class SummonCommand extends Command {
   }
 
   isConditionCheck() {
-    if (this.duel.currentTurn.currentPhase.id != PHASE.MAIN) {
+    if (this.currentPhase.getId() != PHASE.MAIN) {
       return false;
     }
 
@@ -71,7 +76,7 @@ class SummonCommand extends Command {
       return false;
     }
 
-    let arr0 = this.duel.utilsQuery(this.duel.currentDuelistIndex, [[LOCATION.HAND], 0], card => {
+    let arr0 = this.duel.utilsQuery(this.duel.getCurrentDuelistIndex(), [[LOCATION.HAND], 0], card => {
       return card && card.isSummonable()
     });
 
@@ -79,7 +84,7 @@ class SummonCommand extends Command {
       return false;
     }
 
-    let arr1 = this.duel.utilsQuery(this.duel.currentDuelistIndex, [[LOCATION.MZONE], 0], card => {
+    let arr1 = this.duel.utilsQuery(this.duel.getCurrentDuelistIndex(), [[LOCATION.MZONE], 0], card => {
       return card == null;
     });
 
@@ -94,6 +99,9 @@ class SummonCommand extends Command {
 class SetCommand extends Command {
   constructor(duel) {
     super(duel);
+    this.currentDuelist = this.duel.getCurrentDuelist();
+    this.currentTurn = this.duel.getCurrentTurn();
+    this.currentPhase = this.currentTurn.getCurrentPhase();
   }
 
   async exec() {
@@ -117,7 +125,7 @@ class SetCommand extends Command {
   }
 
   isConditionCheck() {
-    if (this.duel.currentTurn.currentPhase.id != PHASE.MAIN) {
+    if (this.currentPhase.getId() != PHASE.MAIN) {
       return false;
     }
 
@@ -125,7 +133,7 @@ class SetCommand extends Command {
       return false;
     }
 
-    let arr0 = this.duel.utilsQuery(this.duel.currentDuelistIndex, [[LOCATION.HAND], 0], card => {
+    let arr0 = this.duel.utilsQuery(this.duel.getCurrentDuelistIndex(), [[LOCATION.HAND], 0], card => {
       return card && card.isSetable()
     });
 
@@ -133,7 +141,7 @@ class SetCommand extends Command {
       return false;
     }
 
-    let arr1 = this.duel.utilsQuery(this.duel.currentDuelistIndex, [[LOCATION.SZONE], 0], card => {
+    let arr1 = this.duel.utilsQuery(this.duel.getCurrentDuelistIndex(), [[LOCATION.SZONE], 0], card => {
       return card == null
     });
 
@@ -148,11 +156,14 @@ class SetCommand extends Command {
 class ChangePositionCommand extends Command {
   constructor(duel) {
     super(duel);
+    this.currentDuelist = this.duel.getCurrentDuelist();
+    this.currentTurn = this.duel.getCurrentTurn();
+    this.currentPhase = this.currentTurn.getCurrentPhase();
   }
 
   async exec() {
     let loc0 = await this.duel.operationSelectLocation([[LOCATION.MZONE], [LOCATION.MZONE]], card => {
-      return card && card.controler == this.duel.currentDuelistIndex && card.isCapableChangePosition()
+      return card && card.getControler() == this.duel.getCurrentDuelistIndex() && card.isCapableChangePosition()
     });
 
     if (loc0 == null) {
@@ -163,7 +174,7 @@ class ChangePositionCommand extends Command {
   }
 
   isConditionCheck() {
-    if (this.duel.currentTurn.currentPhase.id != PHASE.MAIN) {
+    if (this.currentPhase.getId() != PHASE.MAIN) {
       return false;
     }
 
@@ -171,8 +182,8 @@ class ChangePositionCommand extends Command {
       return false;
     }
 
-    let arr0 = this.duel.utilsQuery(this.duel.currentDuelistIndex, [[LOCATION.MZONE], [LOCATION.MZONE]], card => {
-      return card && card.controler == this.duel.currentDuelistIndex && card.isCapableChangePosition()
+    let arr0 = this.duel.utilsQuery(this.duel.getCurrentDuelistIndex(), [[LOCATION.MZONE], [LOCATION.MZONE]], card => {
+      return card && card.getControler() == this.duel.getCurrentDuelistIndex() && card.isCapableChangePosition()
     });
 
     if (arr0.length == 0) {
@@ -186,19 +197,22 @@ class ChangePositionCommand extends Command {
 class BattleCommand extends Command {
   constructor(duel) {
     super(duel);
+    this.currentDuelist = this.duel.getCurrentDuelist();
+    this.currentTurn = this.duel.getCurrentTurn();
+    this.currentPhase = this.currentTurn.getCurrentPhase();
   }
 
   async exec() {
     let loc0 = await this.duel.operationSelectLocation([[LOCATION.MZONE], [LOCATION.MZONE]], card => {
-      return card && card.controler == this.duel.currentDuelistIndex && card.isCapableAttack()
+      return card && card.getControler() == this.duel.getCurrentDuelistIndex() && card.isCapableAttack()
     });
 
     if (loc0 == null) {
       return false;
     }
 
-    let arr1 = this.duel.utilsQuery(this.duel.currentDuelistIndex, [[LOCATION.MZONE], [LOCATION.MZONE]], card => {
-      return card && card.controler == this.duel.opponentDuelistIndex
+    let arr1 = this.duel.utilsQuery(this.duel.getCurrentDuelistIndex(), [[LOCATION.MZONE], [LOCATION.MZONE]], card => {
+      return card && card.getControler() == this.duel.getOpponentDuelistIndex()
     });
 
     if (arr1.length == 0) {
@@ -207,7 +221,7 @@ class BattleCommand extends Command {
     }
 
     let loc1 = await this.duel.operationSelectLocation([[LOCATION.MZONE], [LOCATION.MZONE]], card => {
-      return card && card.controler == this.duel.opponentDuelistIndex
+      return card && card.getControler() == this.duel.getOpponentDuelistIndex()
     });
 
     if (loc1 == null) {
@@ -218,7 +232,7 @@ class BattleCommand extends Command {
   }
 
   isConditionCheck() {
-    if (this.duel.currentTurn.currentPhase.id != PHASE.BATTLE) {
+    if (this.currentPhase.getId() != PHASE.BATTLE) {
       return false;
     }
 
@@ -226,8 +240,8 @@ class BattleCommand extends Command {
       return false;
     }
 
-    let arr0 = this.duel.utilsQuery(this.duel.currentDuelistIndex, [[LOCATION.MZONE], [LOCATION.MZONE]], card => {
-      return card && card.controler == this.duel.currentDuelistIndex && card.isCapableAttack()
+    let arr0 = this.duel.utilsQuery(this.duel.getCurrentDuelistIndex(), [[LOCATION.MZONE], [LOCATION.MZONE]], card => {
+      return card && card.getControler() == this.duel.getCurrentDuelistIndex() && card.isCapableAttack()
     });
 
     if (arr0.length == 0) {
@@ -255,11 +269,14 @@ class NextPhaseCommand extends Command {
 class ActivateCommand extends Command {
   constructor(duel) {
     super(duel);
+    this.currentDuelist = this.duel.getCurrentDuelist();
+    this.currentTurn = this.duel.getCurrentTurn();
+    this.currentPhase = this.currentTurn.getCurrentPhase();
   }
 
   async exec() {
     let loc0 = await this.duel.operationSelectLocation([[LOCATION.SZONE], [LOCATION.SZONE]], card => {
-      return card && card.controler == this.duel.currentDuelistIndex && card.isActiveatable(this.duel)
+      return card && card.getControler() == this.duel.getCurrentDuelistIndex() && card.isActiveatable(this.duel)
     });
 
     if (loc0 == null) {
@@ -270,7 +287,7 @@ class ActivateCommand extends Command {
   }
 
   isConditionCheck() {
-    if (this.duel.currentTurn.currentPhase.id != PHASE.MAIN) {
+    if (this.currentPhase.getId() != PHASE.MAIN) {
       return false;
     }
 
@@ -278,8 +295,8 @@ class ActivateCommand extends Command {
       return false;
     }
 
-    let arr0 = this.duel.utilsQuery(this.duel.currentDuelistIndex, [[LOCATION.SZONE], [LOCATION.SZONE]], card => {
-      return card && card.controler == this.duel.currentDuelistIndex && card.isActiveatable(this.duel)
+    let arr0 = this.duel.utilsQuery(this.duel.getCurrentDuelistIndex(), [[LOCATION.SZONE], [LOCATION.SZONE]], card => {
+      return card && card.getControler() == this.duel.getCurrentDuelistIndex() && card.isActiveatable(this.duel)
     });
 
     if (arr0.length == 0) {

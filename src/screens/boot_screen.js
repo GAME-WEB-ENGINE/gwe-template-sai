@@ -22,7 +22,7 @@ class BootScreen extends GWE.Screen {
 
   handleMenuItemSelected(data) {
     if (data.index == 0) {
-      GWE.screenManager.requestSetScreen(new GameScreen(this.app));
+      GWE.screenManager.requestSetScreen(new GameScreen(this.app), { duelId: 'duel_0000' });
     }
   }
 }

@@ -1,7 +1,8 @@
+let { CARD_POS, SPELL_CARD_NATURE } = require('./enums');
+
 class Action {
   constructor(duel) {
     this.duel = duel;
-    this.currentDuelist = this.duel.duelists[this.duel.currentDuelistIndex];
     this.negate = false;
   }
 
@@ -9,6 +10,10 @@ class Action {
     return this.negate;
   }
   
+  setNegate(negate) {
+    this.negate = negate;
+  }
+
   async exec() {
     return true;
   }
@@ -21,7 +26,7 @@ class DirectAttackAction extends Action {
   }
 
   async exec() {
-    await this.duel.operationDamage(this.duel.opponentDuelistIndex, this.attackerCard.getAttribute('ATK'));
+    await this.duel.operationDamage(this.duel.getOpponentDuelistIndex(), this.attackerCard.getAttribute('ATK'));
     this.attackerCard.incAttribute('ATK_COUNT');
   }
 }
@@ -29,10 +34,11 @@ class DirectAttackAction extends Action {
 class DrawAction extends Action {
   constructor(duel) {
     super(duel);
+    this.currentDuelist = this.duel.getCurrentDuelist();
   }
 
   async exec() {
-    await this.duel.operationDraw(this.duel.currentDuelistIndex, 1);
+    await this.duel.operationDraw(this.duel.getCurrentDuelistIndex(), 1);
     this.currentDuelist.incAttribute('DRAW_COUNT');
   }
 }
@@ -42,6 +48,7 @@ class SummonAction extends Action {
     super(duel);
     this.monsterCard = monsterCard;
     this.index = index;
+    this.currentDuelist = this.duel.getCurrentDuelist();
   }
 
   async exec() {
@@ -69,7 +76,7 @@ class ChangePositionAction extends Action {
   }
 
   async exec() {
-    let position = loc0.card.position == CARD_POS.ATTACK ? CARD_POS.DEFENSE : CARD_POS.ATTACK;
+    let position = loc0.card.getPosition() == CARD_POS.ATTACK ? CARD_POS.DEFENSE : CARD_POS.ATTACK;
     this.duel.operationChangePosition(loc0.card, position);
   }
 }
@@ -106,11 +113,11 @@ class ActivateAction extends Action {
   async exec() {
     await this.duel.operationChangePosition(this.spellCard, CARD_POS.FACEUP);
 
-    for (let i = 0; i < this.spellCard.effects.length; i++) {
+    for (let i = 0; i < this.spellCard.getEffects().length; i++) {
       await this.duel.runAction(new ActivateCardEffectInternalAction(this.duel, this.spellCard, i));
     }
 
-    if (this.spellCard.nature == SPELL_CARD_NATURE.NORMAL) {
+    if (this.spellCard.getNature() == SPELL_CARD_NATURE.NORMAL) {
       await this.duel.operationDestroy(this.spellCard);
     }
   }

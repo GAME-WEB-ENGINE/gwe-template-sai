@@ -1,10 +1,13 @@
 let fs = require('fs');
+let { Deck } = require('./deck');
+let { Attributes } = require('./attributes');
 let { Field } = require('./field');
 
 class DuelistAbstract {
   constructor(data) {
     this.name = '';
     this.pictureFile = '';
+    this.deck = null;
     this.attributes = null;
     this.field = new Field();
 
@@ -12,6 +15,9 @@ class DuelistAbstract {
       return;
     }
     if (!data.hasOwnProperty('PictureFile')) {
+      return;
+    }
+    if (!data.hasOwnProperty('Deck')) {
       return;
     }
     if (!data.hasOwnProperty('Attributes')) {
@@ -41,6 +47,7 @@ class DuelistAbstract {
 
     this.name = data['Name'];
     this.pictureFile = data['PictureFile'];
+    this.deck = new Deck(data['Deck']);
     this.attributes = new Attributes(data['Attributes']);
   }
 
@@ -50,6 +57,10 @@ class DuelistAbstract {
 
   getPictureFile() {
     return this.pictureFile;
+  }
+
+  getDeck() {
+    return this.deck;
   }
 
   getAttribute(key) {

@@ -8,6 +8,10 @@ class Turn {
     return this.phases;
   }
 
+  addPhase(phase) {
+    this.phases.push(phase);
+  }
+
   getCurrentPhase() {
     return this.currentPhase;
   }

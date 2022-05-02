@@ -1,4 +1,6 @@
 let { GWE } = require('gwe');
+let { Duel } = require('../core/duel');
+let { HumanDuelist } = require('../core/duelist');
 let { DrawCommand, SummonCommand, SetCommand, ChangePositionCommand, BattleCommand, NextPhaseCommand, ActivateCommand } = require('../core/duel_commands');
 let { UITurn } = require('../ui/ui_turn');
 let { UIDuelist } = require('../ui/ui_duelist');
@@ -19,22 +21,17 @@ class GameScreen extends GWE.Screen {
   }
 
   onEnter(args) {
-    if (!args.duelData) {
-      throw new Error('Screen::constructor : duelist0 is missing !');
-    }
-    if (!args.duelist1) {
-      throw new Error('Screen::constructor : duelist1 is missing !');
+    if (!args.duelId) {
+      throw new Error('Screen::constructor : duelId is missing !');
     }
 
-    this.duel = new Duel();
-    this.duel.duelists.push(args.duelist0);
-    this.duel.duelists.push(args.duelist1);
+    this.duel = Duel.createFromFile('assets/models/' + args.duelId + '/data.json');
 
     this.uiTopBgNode = document.createElement('img');
-    this.uiTopBgNode.src = 'assets/textures/top_background.png';
+    this.uiTopBgNode.src = 'assets/textures/bg_top.png';
     GWE.uiManager.addNode(this.uiTopBgNode, 'position:absolute; top:0; right:0; bottom:50%; left:0;');
     this.uiBottomBgNode = document.createElement('img');
-    this.uiBottomBgNode.src = 'assets/textures/bottom_background.png';
+    this.uiBottomBgNode.src = 'assets/textures/bg_bottom.png';
     GWE.uiManager.addNode(this.uiBottomBgNode, 'position:absolute; top:50%; right:0; bottom:0; left:0;');
 
     this.uiTurn = new UITurn();
@@ -75,149 +72,185 @@ class GameScreen extends GWE.Screen {
     this.duel.startup();
   }
 
+  // done
   selectLocation(range, predicateCard, required, response) {
     return new Promise(resolve => {
       GWE.uiManager.focus(this.uiBoard);
 
-      for (let slot of this.uiBoard.slots) {
+      for (let slot of this.uiBoard.getSlots()) {
         for (let i = 0; i < 2; i++) {
           let duelistIndex = i == 0 ? this.duel.getCurrentDuelistIndex() : this.duel.getOpponentDuelistIndex();
-          if (range[i] != 0 && slot.duelistIndex == duelistIndex && range[i].includes(slot.location) && predicateCard(slot.card)) {
+          if (range[i] != 0 && slot.getDuelistIndex() == duelistIndex && range[i].includes(slot.getLocation()) && predicateCard(slot.getCard())) {
             slot.setSelectable(true);
           }
         }
       }
 
       if (!required) {
-        Base.subscribe(this.uiBoard, this, 'E_ECHAP_PRESSED', () => {
-          Base.unsubscribe(this.uiBoard, this, 'E_ECHAP_PRESSED');
-          Base.unsubscribe(this.uiBoard, this, 'E_ENTER_PRESSED');
-          this.uiBoard.slots.forEach(slot => slot.setSelectable(false));
+        GWE.eventManager.subscribe(this.uiBoard, 'E_ECHAP_PRESSED', this, () => {
+          GWE.eventManager.unsubscribe(this.uiBoard, 'E_ECHAP_PRESSED', this);
+          GWE.eventManager.unsubscribe(this.uiBoard, 'E_ENTER_PRESSED', this);
+          this.uiBoard.getSlots().forEach(slot => slot.setSelectable(false));
           response.state = false;
           resolve();
         });
       }
 
-      Base.subscribe(this.uiBoard, this, 'E_ENTER_PRESSED', () => {
-        let focusedSlot = this.uiBoard.focusedSlot;
-        if (focusedSlot.selectable) {
-          Base.unsubscribe(this.uiBoard, this, 'E_ECHAP_PRESSED');
-          Base.unsubscribe(this.uiBoard, this, 'E_ENTER_PRESSED');
-          this.uiBoard.slots.forEach(slot => slot.setSelectable(false));
+      GWE.eventManager.subscribe(this.uiBoard, 'E_ENTER_PRESSED', this, () => {
+        let focusedSlot = this.uiBoard.getFocusedSlot();
+        if (focusedSlot.isSelectable()) {
+          GWE.eventManager.unsubscribe(this.uiBoard, 'E_ECHAP_PRESSED', this);
+          GWE.eventManager.unsubscribe(this.uiBoard, 'E_ENTER_PRESSED', this);
+          this.uiBoard.getSlots().forEach(slot => slot.setSelectable(false));
           GWE.uiManager.unfocus();
           response.state = true;
-          response.location = focusedSlot.location;
-          response.index = focusedSlot.index;
-          response.card = focusedSlot.card;
+          response.location = focusedSlot.getLocation();
+          response.index = focusedSlot.getIndex();
+          response.card = focusedSlot.getCard();
           resolve();
         }
       });
     });
   }
 
+  // done
   handleDuelNewTurn() {
     this.uiDuelists[this.duel.getOpponentDuelistIndex()].hideSelection();
     this.uiDuelists[this.duel.getCurrentDuelistIndex()].showSelection();
 
-    if (this.duel.duelists[this.duel.getCurrentDuelistIndex()] instanceof HumanDuelist) {
+    if (this.duel.getCurrentDuelist() instanceof HumanDuelist) {
       GWE.uiManager.focus(this.uiDuelists[this.duel.getCurrentDuelistIndex()]);
     }
   }
 
+  // done
   handleDuelSelectLocation(data) {
     return this.selectLocation(data.range, data.predicateCard, data.required, data.response);
   }
 
+  // done
   handleBoardSlotUnfocused() {
     this.uiCardDetail.setCard(null);
   }
 
+  // done
   handleBoardSlotFocused(data) {
-    if (data.slot && data.slot.card && data.slot.flipped == false) {
-      this.uiCardDetail.setCard(data.slot.card);
+    if (data.slot && data.slot.getCard() && data.slot.isFlipped() == false) {
+      this.uiCardDetail.setCard(data.slot.getCard());
     }
     else {
       this.uiCardDetail.setCard(null);
     }
   }
 
+  // done
   handleDuelistEnterPressed() {
     this.uiActionMenu.clear();
 
-    let draw = new DrawCommand(this.duel, 1);
-    if (draw.isConditionCheck()) {
-      this.uiActionMenu.addItem('Piocher', true, -1, { name: 'DRAW' });
+    let drawCmd = new DrawCommand(this.duel);
+    if (drawCmd.isConditionCheck()) {
+      let item = new GWE.UIMenuText();
+      item.setId('DRAW');
+      item.setText('Piocher');
+      this.uiActionMenu.addWidget(item);
     }
 
-    let summon = new SummonCommand(this.duel);
-    if (summon.isConditionCheck()) {
-      this.uiActionMenu.addItem('Invoquer', true, -1, { name: 'SUMMON' });
+    let summonCmd = new SummonCommand(this.duel);
+    if (summonCmd.isConditionCheck()) {
+      let item = new GWE.UIMenuText();
+      item.setId('SUMMON');
+      item.setText('Invoquer');
+      this.uiActionMenu.addWidget(item);
     }
 
-    let set = new SetCommand(this.duel);
-    if (set.isConditionCheck()) {
-      this.uiActionMenu.addItem('Poser', true, -1, { name: 'SET' });
+    let setCmd = new SetCommand(this.duel);
+    if (setCmd.isConditionCheck()) {
+      let item = new GWE.UIMenuText();
+      item.setId('SET');
+      item.setText('Poser');
+      this.uiActionMenu.addWidget(item);
     }
 
-    let battle = new BattleCommand(this.duel);
-    if (battle.isConditionCheck()) {
-      this.uiActionMenu.addItem('Attaquer', true, -1, { name: 'BATTLE' });
+    let battleCmd = new BattleCommand(this.duel);
+    if (battleCmd.isConditionCheck()) {
+      let item = new GWE.UIMenuText();
+      item.setId('BATTLE');
+      item.setText('Attaquer');
+      this.uiActionMenu.addWidget(item);
     }
 
-    let activate = new ActivateCommand(this.duel);
-    if (activate.isConditionCheck()) {
-      this.uiActionMenu.addItem('Activer', true, -1, { name: 'ACTIVATE' });
+    let activateCmd = new ActivateCommand(this.duel);
+    if (activateCmd.isConditionCheck()) {
+      let item = new GWE.UIMenuText();
+      item.setId('ACTIVATE');
+      item.setText('Activer');
+      this.uiActionMenu.addWidget(item);
     }
 
-    let changePosition = new ChangePositionCommand(this.duel);
-    if (changePosition.isConditionCheck()) {
-      this.uiActionMenu.addItem('Changer de position', true, -1, { name: 'CHANGE_POSITION' });
+    let changePositionCmd = new ChangePositionCommand(this.duel);
+    if (changePositionCmd.isConditionCheck()) {
+      let item = new GWE.UIMenuText();
+      item.setId('CHANGE_POSITION');
+      item.setText('Changer de position');
+      this.uiActionMenu.addWidget(item);
     }
 
-    let nextPhase = new NextPhaseCommand(this.duel);
-    if (nextPhase.isConditionCheck()) {
-      this.uiActionMenu.addItem('Phase suivante', true, -1, { name: 'NEXT_PHASE' });
+    let nextPhaseCmd = new NextPhaseCommand(this.duel);
+    if (nextPhaseCmd.isConditionCheck()) {
+      let item = new GWE.UIMenuText();
+      item.setId('NEXT_PHASE');
+      item.setText('Phase suivante');
+      this.uiActionMenu.addWidget(item);
     }
 
     this.uiActionMenu.show();
     GWE.uiManager.focus(this.uiActionMenu);
   }
 
-  handleDuelistSpacePressed() {
+  // done
+  async handleDuelistSpacePressed() {
     GWE.uiManager.focus(this.uiBoard);
-    Base.subscribeOnce(this.uiBoard, this, 'E_ECHAP_PRESSED', () => {
-      GWE.uiManager.focus(this.uiDuelists[this.duel.getCurrentDuelistIndex()]);
-    });
+    await GWE.eventManager.wait(this.uiBoard, 'E_ECHAP_PRESSED');
+    GWE.uiManager.focus(this.uiDuelists[this.duel.getCurrentDuelistIndex()]);
   }
 
+  //done
   handleActionMenuClosed() {
     this.uiActionMenu.hide();
     GWE.uiManager.focus(this.uiDuelists[this.duel.getCurrentDuelistIndex()]);
   }
 
+  // done
   async handleActionMenuItemSelected(data) {
     this.uiActionMenu.hide();
 
-    if (data.item.dataset.name == 'DRAW') {
-      await this.duel.runAction(new DrawCommand(this.duel, 1)); // bizzare
+    if (data.item.getId() == 'DRAW') {
+      let cmd = new DrawCommand(this.duel, 1);
+      await cmd.exec();
     }
-    else if (data.item.dataset.name == 'SUMMON') {
-      await this.duel.runAction(new SummonCommand(this.duel));
+    else if (data.item.getId() == 'SUMMON') {
+      let cmd = new SummonCommand(this.duel);
+      await cmd.exec();
     }
-    else if (data.item.dataset.name == 'SET') {
-      await this.duel.runAction(new SetCommand(this.duel));
+    else if (data.item.getId() == 'SET') {
+      let cmd = new SetCommand(this.duel);
+      await cmd.exec();
     }
-    else if (data.item.dataset.name == 'BATTLE') {
-      await this.duel.runAction(new BattleCommand(this.duel));
+    else if (data.item.getId() == 'BATTLE') {
+      let cmd = new BattleCommand(this.duel);
+      await cmd.exec();
     }
-    else if (data.item.dataset.name == 'ACTIVATE') {
-      await this.duel.runAction(new ActivateCommand(this.duel));
+    else if (data.item.getId() == 'ACTIVATE') {
+      let cmd = new ActivateCommand(this.duel);
+      await cmd.exec();
     }
-    else if (data.item.dataset.name == 'CHANGE_POSITION') {
-      await this.duel.runAction(new ChangePositionCommand(this.duel));
+    else if (data.item.getId() == 'CHANGE_POSITION') {
+      let cmd = new ChangePositionCommand(this.duel);
+      await cmd.exec();
     }
-    else if (data.item.dataset.name == 'NEXT_PHASE') {
-      await this.duel.runAction(new NextPhaseCommand(this.duel));
+    else if (data.item.getId() == 'NEXT_PHASE') {
+      let cmd = new NextPhaseCommand(this.duel);
+      await cmd.exec();
     }
 
     GWE.uiManager.focus(this.uiDuelists[this.duel.getCurrentDuelistIndex()]);

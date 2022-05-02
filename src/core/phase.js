@@ -16,6 +16,10 @@ class Phase {
   isDisabled() {
     return this.disabled;
   }
+
+  setDisabled(disabled) {
+    this.disabled = disabled;
+  }
 }
 
 module.exports.Phase = Phase;

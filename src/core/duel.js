@@ -1,6 +1,9 @@
+let fs = require('fs');
 let { GWE } = require('gwe');
-let { HumanDuelist, AIDuelist } = require('./duelist');
+let { LOCATION, PHASE, HAND_MAX } = require('./enums');
+let { HumanDuelist } = require('./duelist');
 let { ActivateAction } = require('./duel_actions');
+let { Turn } = require('./turn');
 let { Phase } = require('./phase');
 
 class Duel {
@@ -11,24 +14,28 @@ class Duel {
     this.currentDuelistIndex = -1;
     this.opponentDuelistIndex = -1;
 
-    if (!data.hasOwnProperty('HumanDuelist')) {
-      return;
-    }
-    if (!data.hasOwnProperty('AIDuelist')) {
+    if (!data.hasOwnProperty('DuelistIds')) {
       return;
     }
 
-    
+    for (let i = 0; i < 2; i++) {
+      let duelistId = data['DuelistIds'][i];
+      let duelist = HumanDuelist.createFromFile('assets/models/' + duelistId + '/data.json');
+      let deck = duelist.getDeck();
 
-    if (!data.hasOwnProperty('HumanDeck')) {
-      return;
+      for (let card of deck.getCards()) {
+        card.setOwner(i);
+        card.setControler(i);
+        duelist.field.deck.push(card);
+      }
+
+      this.duelists.push(duelist);
     }
-    if (!data.hasOwnProperty('HumanDuelistId')) {
-      return;
-    }
+  }
 
-    this.duelists.push(HumanDuelist.createFromFile('assets/models/' + data['HumanDuelistId'] + ))
-
+  static createFromFile(path) {
+    let data = JSON.parse(fs.readFileSync(path));
+    return new Duel(data);
   }
 
   startup() {
@@ -38,17 +45,19 @@ class Duel {
   }
 
   async runAction(action) {
-    let spellCardArray = this.utilsQuery(this.currentDuelistIndex, [[LOCATION.SZONE], [LOCATION.SZONE]], card => card);
-    let fieldCardArray = this.utilsQuery(this.currentDuelistIndex, [[LOCATION.MZONE, LOCATION.SZONE, LOCATION.FZONE], [LOCATION.MZONE, LOCATION.SZONE, LOCATION.FZONE]], card => card);
+    let spellCards = this.utilsQuery(this.currentDuelistIndex, [[LOCATION.SZONE], [LOCATION.SZONE]], card => card);
+    let cards = this.utilsQuery(this.currentDuelistIndex, [[LOCATION.MZONE, LOCATION.SZONE, LOCATION.FZONE], [LOCATION.MZONE, LOCATION.SZONE, LOCATION.FZONE]], card => card);
 
     // check triggers
-    for (let spellCard of spellCardArray) {
+    //
+    for (let spellCard of spellCards) {
       if (spellCard.isTriggerable(this, action)) {
         await this.runAction(new ActivateAction(this, spellCard));
       }
     }
 
     // exec action
+    //
     if (!action.isNegate()) {
       await action.exec();
     }
@@ -57,14 +66,16 @@ class Duel {
     }
 
     // check releases
-    for (let spellCard of spellCardArray) {
+    //
+    for (let spellCard of spellCards) {
       if (spellCard.isReleasable(this)) {
         await this.operationDestroy(spellCard);
       }
     }
 
     // check & update target cards & status links
-    for (let spellCard of spellCardArray) {
+    //
+    for (let spellCard of spellCards) {
       if (spellCard.getPosition() != CARD_POS.FACEUP) {
         continue;
       }
@@ -72,14 +83,16 @@ class Duel {
         continue;
       }
 
-      // ----- stop here
+      for (let card of cards) {
+        for (let effect of spellCard.getEffects()) {
+          if (effect.getTargetType() != EFFECT_TARGET_TYPE.FIELD) {
+            continue;
+          }
 
-      for (let card of fieldCardArray) {
-        let effects = spellCard.getEffects();
-        for (let effect of spellCard.effects.filter(e => e.targetType == EFFECT_TARGET_TYPE.FIELD)) {
           if (effect.isPresentTargetCard(card) && !effect.isTarget(this, card)) {
             effect.removeTargetCard(card);
-            card.attributes.removeModifierIf(m => m.linked && m.linkedEffect == effect);
+            let attributes = card.getAttributes();
+            attributes.removeModifierIf(m => m.isLinked() && m.getLinkedEffect() == effect);
           }
           else if (!effect.isPresentTargetCard(card) && effect.isTarget(this, card)) {
             effect.addTargetCard(card);
@@ -88,10 +101,13 @@ class Duel {
         }
       }
 
-      for (let effect of spellCard.effects.filter(e => e.targetType == EFFECT_TARGET_TYPE.SINGLE)) {
-        for (let targetCard of effect.targetCards) {
-          if (!targetCard || !effect.isTargetConditionCheck(targetCard)) {
-            console.log('pass');
+      for (let effect of spellCard.getEffects()) {
+        if (effect.getTargetType() != EFFECT_TARGET_TYPE.SINGLE) {
+          continue;
+        }
+
+        for (let targetCard of effect.getTargetCards()) {
+          if (targetCard == null || !effect.isTargetConditionCheck(targetCard)) {
             await this.operationDestroy(spellCard);
           }
         }
@@ -99,21 +115,32 @@ class Duel {
     }
 
     // check win/lost
-    if (this.duelists[0].lifepoints == 0) {
+    //
+    if (this.duelists[0].getAttribute('LIFEPOINTS') == 0) {
       return 'WIN';
     }
-    else if (this.duelists[1].lifepoints == 0) {
+    else if (this.duelists[1].getAttribute('LIFEPOINTS') == 0) {
       return 'LOST';
     }
 
     // check new turn
-    if (this.currentTurn.currentPhase.id == PHASE.END) {
+    //
+    let currentPhase = this.currentTurn.getCurrentPhase();
+    if (currentPhase.getId() == PHASE.END) {
       return this.operationNewTurn();
     }
   }
 
   getDuelists() {
     return this.duelists;
+  }
+
+  getCurrentDuelist() {
+    return this.duelists[this.currentDuelistIndex];
+  }
+
+  getOpponentDuelist() {
+    return this.duelists[this.opponentDuelistIndex];
   }
 
   getCurrentTurn() {
@@ -144,20 +171,20 @@ class Duel {
 
     if (this.turns.length < 2) {
       let turn = new Turn();
-      turn.phases.push(CREATE_PHASE_DRAW());
-      turn.phases.push(CREATE_PHASE_MAIN());
-      turn.phases.push(CREATE_PHASE_END());
-      turn.currentPhase = turn.phases[0];
+      turn.addPhase(CREATE_PHASE_DRAW());
+      turn.addPhase(CREATE_PHASE_MAIN());
+      turn.addPhase(CREATE_PHASE_END());
+      turn.setCurrentPhase(turn.getPhases()[0]);
       this.turns.push(turn);
       this.currentTurn = turn;
     }
     else {
       let turn = new Turn();
-      turn.phases.push(CREATE_PHASE_DRAW());
-      turn.phases.push(CREATE_PHASE_MAIN());
-      turn.phases.push(CREATE_PHASE_BATTLE());
-      turn.phases.push(CREATE_PHASE_END());
-      turn.currentPhase = turn.phases[0];
+      turn.addPhase(CREATE_PHASE_DRAW());
+      turn.addPhase(CREATE_PHASE_MAIN());
+      turn.addPhase(CREATE_PHASE_BATTLE());
+      turn.addPhase(CREATE_PHASE_END());
+      turn.setCurrentPhase(turn.getPhases()[0]);
       this.turns.push(turn);
       this.currentTurn = turn;
     }
@@ -168,12 +195,12 @@ class Duel {
     }
 
     for (let card of this.utilsQuery(this.currentDuelistIndex, [[LOCATION.SZONE, LOCATION.MZONE, LOCATION.FZONE], [LOCATION.SZONE, LOCATION.MZONE, LOCATION.FZONE]], card => card)) {
-      if (card.type == CARD_TYPE.MONSTER) {
+      if (card.getType() == CARD_TYPE.MONSTER) {
         card.setAttribute('ATK_COUNT', 0);
-        card.turnCounter++;
+        card.incTurnCounter();
       }
-      else if (card.type == CARD_TYPE.SPELL && card.position == CARD_POS.FACEUP) {
-        card.turnCounter++;
+      else if (card.getType() == CARD_TYPE.SPELL && card.getPosition() == CARD_POS.FACEUP) {
+        card.incTurnCounter();
       }
     }
 
@@ -209,6 +236,8 @@ class Duel {
 
     return response;
   }
+
+  // here
 
   async operationDraw(duelistIndex, numCards) {
     if (this.duelists[duelistIndex].field.hand.length + numCards > HAND_MAX) {
@@ -424,35 +453,17 @@ module.exports.Duel = Duel;
 // -------------------------------------------------------------------------------------------
 
 function CREATE_PHASE_DRAW() {
-  let phase = new Phase();
-  phase.id = PHASE.DRAW;
-  phase.name = 'Draw Phase';
-  phase.disabled = false;
-  return phase;
+  return new Phase(PHASE.DRAW, 'Draw Phase', false);
 }
 
 function CREATE_PHASE_MAIN() {
-  let phase = new Phase();
-  phase.id = PHASE.MAIN;
-  phase.name = 'Main Phase';
-  phase.disabled = false;
-  return phase;
+  return new Phase(PHASE.MAIN, 'Main Phase', false);
 }
 
 function CREATE_PHASE_BATTLE() {
-  let phase = new Phase();
-  phase.id = PHASE.BATTLE;
-  phase.name = 'Battle Phase';
-  phase.disabled = false;
-  return phase;
+  return new Phase(PHASE.BATTLE, 'Battle Phase', false);
 }
 
 function CREATE_PHASE_END() {
-  let phase = new Phase();
-  phase.id = PHASE.END;
-  phase.name = 'End Phase';
-  phase.disabled = false;
-  return phase;
+  return new Phase(PHASE.END, 'End Phase', false);
 }
-
-const OPPONENT_OF = (duelistIndex) => duelistIndex == 0 ? 1 : 0;

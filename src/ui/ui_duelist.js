@@ -1,5 +1,3 @@
-// DONE
-
 let { GWE } = require('gwe');
 
 class UIDuelist extends GWE.UIWidget {

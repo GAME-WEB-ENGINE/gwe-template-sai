@@ -46,8 +46,20 @@ class Effect {
     this.mechanicOpts = data['MechanicOpts'];
   }
 
+  getTargetType() {
+    return this.targetType;
+  }
+
+  getTargetRange() {
+    return this.targetRange;
+  }
+
+  getTargetCards() {
+    return this.targetCards;
+  }
+
   isPresentTarget(duel) {
-    let cardArray = duel.utilsQuery(this.card.controler, this.targetRange, card => card && this.isTargetConditionCheck(card));
+    let cardArray = duel.utilsQuery(this.card.getControler(), this.targetRange, card => card && this.isTargetConditionCheck(card));
     if (cardArray.length == 0) {
       return false;
     }
@@ -56,7 +68,7 @@ class Effect {
   }
 
   isTarget(duel, card) {
-    let cardArray = duel.utilsQuery(this.card.controler, this.targetRange, card => card && this.isTargetConditionCheck(card));
+    let cardArray = duel.utilsQuery(this.card.getControler(), this.targetRange, card => card && this.isTargetConditionCheck(card));
     if (cardArray.length == 0) {
       return false;
     }
@@ -74,7 +86,7 @@ class Effect {
   }
 
   isPresentTargetCard(targetCard) {
-    return this.targetCards.has(targetCard);
+    return this.targetCards.indexOf(targetCard) != -1;
   }
 
   addTargetCard(targetCard) {
@@ -82,7 +94,7 @@ class Effect {
   }
 
   removeTargetCard(targetCard) {
-    this.targetCards.remove(targetCard);
+    this.targetCards.splice(this.targetCards.indexOf(targetCard), 1);
   }
 
   apply(duel, sourceCard, targetCard) {

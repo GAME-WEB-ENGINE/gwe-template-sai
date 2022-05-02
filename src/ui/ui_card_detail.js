@@ -1,5 +1,3 @@
-// DONE
-
 let { GWE } = require('gwe');
 
 class UICardDetail extends GWE.UIWidget {
@@ -152,7 +150,7 @@ class UICardDetail extends GWE.UIWidget {
     else {
       this.node.querySelector('.js-title').textContent = '--';
       this.node.querySelector('.js-cover-img').src = '#';
-      this.node.querySelector('.js-infos').textContent = '--';
+      this.node.querySelector('.js-infos').textContent = '';
     }
   }
 

@@ -1,5 +1,3 @@
-// DONE
-
 let { GWE } = require('gwe');
 
 class UIStackSlot extends GWE.UIWidget {
@@ -21,7 +19,7 @@ class UIStackSlot extends GWE.UIWidget {
   update() {
     if (this.cards.length > 0) {
       let lastCard = this.cards[this.cards.length - 1];
-      this.node.querySelector('.js-bg').style.backgroundImage = this.flipped ? 'url(Resources/Textures/CardBack.png)' : 'url(' + lastCard.coverFile + ')';
+      this.node.querySelector('.js-bg').style.backgroundImage = this.flipped ? 'url(assets/textures/card_back.png)' : 'url(' + lastCard.getCoverFile() + ')';
       this.node.querySelector('.js-num-cards').textContent = this.cards.length;
     }
     else {
